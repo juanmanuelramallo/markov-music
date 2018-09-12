@@ -6,12 +6,14 @@ GEM
       bindata
       parallel
     parallel (1.12.1)
+    pickup (0.0.11)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   muse
+  pickup
 
 BUNDLED WITH
    1.16.4

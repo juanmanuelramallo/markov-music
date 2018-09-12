@@ -1,0 +1,14 @@
+---
+songs:
+  - title: Into you
+    genre: pop
+    chords: Am GM CM FM
+    tonic: C
+  - title: Toothbrush
+    genre: pop
+    chords: FM GM Am CM
+    tonic: C
+  - title: Lean on
+    genre: pop
+    chords: FM GM Am Cm
+    tonic: C

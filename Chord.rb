@@ -1,7 +1,8 @@
 require "muse"
 
 class Chord
-  attr_reader :tonic, :octave, :is_major, :modifiers
+  attr_reader :octave, :is_major, :modifiers
+  attr_accessor :tonic, :semitones
 
   MODIFIERS = {
     "7" => 10,
@@ -13,6 +14,10 @@ class Chord
   }.freeze
 
   NOTES = Muse::NOTES.drop(1).freeze
+
+  def self.g(chord)
+    Chord.from_string("0-#{chord}-3")
+  end
 
   def self.from_string(chord)
     _, chord_name, octave = chord.split("-")
@@ -28,16 +33,21 @@ class Chord
     @is_major = options[:M]
     @modifiers = options[:modifiers]
     @octave = options[:octave] || 3
+    @semitones = notes_in_semitones_from_tonic
+  end
+
+  def name
+    ["#{tonic.capitalize}#{is_major ? 'M' : 'm'}", modifier_names].compact.join("_")
   end
 
   def notes
-    indexes = []
-    tonic_index = NOTES.index(tonic)
-    indexes = modifiers.map { |modifier| tonic_index + MODIFIERS[modifier] }.compact
-    indexes << (tonic_index + (is_major ? 4 : 3)) unless modifiers.include?("sus4")
-    indexes << (tonic_index + 7)
-    indexes << tonic_index
-    indexes.map { |i| note(i) }.join("#{octave}_") + "#{octave}"
+    semitones.map { |i| note(i) }.join("#{octave}_") + "#{octave}"
+  end
+
+  def +(semitones_amount)
+    semitones.map! { |semitone| semitone + semitones_amount }
+    @tonic = NOTES[(NOTES.index(tonic) + semitones_amount) % NOTES.size]
+    self
   end
 
   private
@@ -45,7 +55,22 @@ class Chord
   def note(index)
     NOTES[index % NOTES.length]
   end
+
+  def modifier_names
+    return nil if modifiers.empty?
+    modifiers.select { |modifier| MODIFIERS[modifier] }.sort.join("_")
+  end
+
+  def notes_in_semitones_from_tonic
+    @semitones = []
+    tonic_index = NOTES.index(tonic)
+    @semitones = modifiers.map { |modifier| tonic_index + MODIFIERS[modifier] }.compact
+    @semitones << (tonic_index + (is_major ? 4 : 3)) unless modifiers.include?("sus4")
+    @semitones << (tonic_index + 7)
+    @semitones << tonic_index
+  end
 end
 
-# puts Chord.new({ tonic: "D", M: false, modifiers: %w(7), octave: 4 }).notes
-# puts Chord.from_string("4-Dm_7-4").notes
+# puts Chord.new({ tonic: "E", M: true, modifiers: %w(maj7 add9) }).name
+# puts Chord.g("Dm_7").name
+# puts (Chord.g("Dm")).name
